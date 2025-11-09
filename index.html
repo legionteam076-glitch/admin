@@ -290,6 +290,18 @@
             font-size: 0.875rem;
             margin-top: 1rem;
         }
+        
+        /* Auto-fill indicator */
+        .auto-fill-indicator {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(34, 197, 94, 0.2);
+            color: var(--primary-start);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -318,136 +330,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Firebase SDK Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2aS6EH_0Hbqj9RKwnjn9LMuHBv0GjLlw",
-            authDomain: "popamtas.firebaseapp.com",
-            projectId: "popamtas",
-            storageBucket: "popamtas.firebasestorage.app",
-            messagingSenderId: "1007544989709",
-            appId: "1:1007544989709:web:e6f719865e42bff4607d44",
-            measurementId: "G-K3RMWGN461"
-        };
-        
-        let app = null;
-        let db = null;
-        let auth = null;
-
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    console.log(`User signed in: ${user.uid}`);
-                } else {
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (error) {
-                        console.error("Firebase Auth Error:", error);
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-        }
-
-        window.firebaseDb = {
-            async addScript(scriptData) {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return null;
-                }
-                
-                try {
-                    const docRef = await addDoc(collection(db, "scripts"), {
-                        ...scriptData,
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    });
-                    console.log("Script added with ID: ", docRef.id);
-                    return docRef.id;
-                } catch (error) {
-                    console.error("Error adding script: ", error);
-                    return null;
-                }
-            },
-            
-            async getAllScripts() {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return [];
-                }
-                
-                try {
-                    const querySnapshot = await getDocs(collection(db, "scripts"));
-                    const scripts = [];
-                    querySnapshot.forEach((doc) => {
-                        scripts.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    });
-                    return scripts;
-                } catch (error) {
-                    console.error("Error getting scripts: ", error);
-                    return [];
-                }
-            },
-            
-            async updateScript(scriptId, scriptData) {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return false;
-                }
-                
-                try {
-                    const scriptRef = doc(db, "scripts", scriptId);
-                    await updateDoc(scriptRef, {
-                        ...scriptData,
-                        updatedAt: new Date()
-                    });
-                    console.log("Script updated: ", scriptId);
-                    return true;
-                } catch (error) {
-                    console.error("Error updating script: ", error);
-                    return false;
-                }
-            },
-            
-            async deleteScript(scriptId) {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return false;
-                }
-                
-                try {
-                    await deleteDoc(doc(db, "scripts", scriptId));
-                    console.log("Script deleted: ", scriptId);
-                    return true;
-                } catch (error) {
-                    console.error("Error deleting script: ", error);
-                    return false;
-                }
-            },
-
-            async getAllCategories() {
-                return [
-                    { name: "System Scripts", icon: "settings" },
-                    { name: "Server Backups", icon: "server" },
-                    { name: "Skin Scripts", icon: "user" },
-                    { name: "Vehicle Scripts", icon: "car" }
-                ];
-            }
-        };
-    </script>
 
     <!-- Main Admin Panel (Initially Hidden) -->
     <div id="admin-panel" class="hidden">
@@ -561,11 +443,21 @@
                                 <h3 class="text-lg font-bold mb-4 text-primary-start" id="form-title">Add New Script</h3>
                                 <form id="script-form">
                                     <div class="mb-4">
-                                        <label for="script-title" class="form-label">Script Title</label>
+                                        <label for="script-title" class="form-label">
+                                            Script Title 
+                                            <span id="title-auto-fill" class="auto-fill-indicator hidden">
+                                                <i data-lucide="zap" class="w-3 h-3 mr-1"></i> Auto-filled
+                                            </span>
+                                        </label>
                                         <input type="text" id="script-title" class="form-input" placeholder="Enter script title" required>
                                     </div>
                                     <div class="mb-4">
-                                        <label for="script-description" class="form-label">Description</label>
+                                        <label for="script-description" class="form-label">
+                                            Description
+                                            <span id="description-auto-fill" class="auto-fill-indicator hidden">
+                                                <i data-lucide="zap" class="w-3 h-3 mr-1"></i> Auto-filled
+                                            </span>
+                                        </label>
                                         <textarea id="script-description" class="form-input" rows="3" placeholder="Enter script description" required></textarea>
                                     </div>
                                     <div class="mb-4">
@@ -753,6 +645,26 @@
         let categories = [];
         let editingScriptId = null;
 
+        // Category auto-fill configurations
+        const categoryConfigs = {
+            "Skin Scripts": {
+                title: "Mta Skin",
+                description: "Dark Store"
+            },
+            "Vehicle Scripts": {
+                title: "Mta Vehicle Skin",
+                description: "Dark Store"
+            },
+            "System Scripts": {
+                title: "",
+                description: ""
+            },
+            "Server Backups": {
+                title: "",
+                description: ""
+            }
+        };
+
         // Toast notification function
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -781,10 +693,85 @@
             }
         }
 
+        // Setup category auto-fill
+        function setupCategoryAutoFill() {
+            const categorySelect = document.getElementById('script-category');
+            const titleInput = document.getElementById('script-title');
+            const descriptionInput = document.getElementById('script-description');
+            const titleIndicator = document.getElementById('title-auto-fill');
+            const descriptionIndicator = document.getElementById('description-auto-fill');
+            
+            let titleAutoFilled = false;
+            let descriptionAutoFilled = false;
+            
+            categorySelect.addEventListener('change', function() {
+                const selectedCategory = this.value;
+                const config = categoryConfigs[selectedCategory];
+                
+                if (config) {
+                    // Auto-fill title if not manually edited
+                    if (!titleAutoFilled && config.title && !titleInput.value) {
+                        titleInput.value = config.title;
+                        titleIndicator.classList.remove('hidden');
+                        titleAutoFilled = true;
+                    } else if (config.title && titleInput.value === config.title) {
+                        titleIndicator.classList.remove('hidden');
+                        titleAutoFilled = true;
+                    }
+                    
+                    // Auto-fill description if not manually edited
+                    if (!descriptionAutoFilled && config.description && !descriptionInput.value) {
+                        descriptionInput.value = config.description;
+                        descriptionIndicator.classList.remove('hidden');
+                        descriptionAutoFilled = true;
+                    } else if (config.description && descriptionInput.value === config.description) {
+                        descriptionIndicator.classList.remove('hidden');
+                        descriptionAutoFilled = true;
+                    }
+                }
+            });
+            
+            // Reset indicators when user manually edits
+            titleInput.addEventListener('input', function() {
+                const selectedCategory = categorySelect.value;
+                const config = categoryConfigs[selectedCategory];
+                
+                if (config && this.value !== config.title) {
+                    titleIndicator.classList.add('hidden');
+                    titleAutoFilled = false;
+                } else if (config && this.value === config.title) {
+                    titleIndicator.classList.remove('hidden');
+                    titleAutoFilled = true;
+                }
+            });
+            
+            descriptionInput.addEventListener('input', function() {
+                const selectedCategory = categorySelect.value;
+                const config = categoryConfigs[selectedCategory];
+                
+                if (config && this.value !== config.description) {
+                    descriptionIndicator.classList.add('hidden');
+                    descriptionAutoFilled = false;
+                } else if (config && this.value === config.description) {
+                    descriptionIndicator.classList.remove('hidden');
+                    descriptionAutoFilled = true;
+                }
+            });
+            
+            // Reset on form clear
+            document.getElementById('clear-form').addEventListener('click', function() {
+                titleIndicator.classList.add('hidden');
+                descriptionIndicator.classList.add('hidden');
+                titleAutoFilled = false;
+                descriptionAutoFilled = false;
+            });
+        }
+
         async function initAdminPanel() {
             await loadScripts();
             await loadCategories();
             setupFormHandlers();
+            setupCategoryAutoFill();
             updateDashboardStats();
             updateCategoryStats();
         }
@@ -954,6 +941,10 @@
             editingScriptId = null;
             document.getElementById('form-title').textContent = 'Add New Script';
             document.getElementById('submit-text').textContent = 'ADD SCRIPT';
+            
+            // Reset auto-fill indicators
+            document.getElementById('title-auto-fill').classList.add('hidden');
+            document.getElementById('description-auto-fill').classList.add('hidden');
         }
 
         function editScript(scriptId) {
@@ -969,6 +960,17 @@
             editingScriptId = scriptId;
             document.getElementById('form-title').textContent = 'Edit Script';
             document.getElementById('submit-text').textContent = 'UPDATE SCRIPT';
+            
+            // Update auto-fill indicators for editing
+            const config = categoryConfigs[script.category];
+            if (config) {
+                if (script.title === config.title) {
+                    document.getElementById('title-auto-fill').classList.remove('hidden');
+                }
+                if (script.description === config.description) {
+                    document.getElementById('description-auto-fill').classList.remove('hidden');
+                }
+            }
             
             document.getElementById('script-form').scrollIntoView({ behavior: 'smooth' });
         }
