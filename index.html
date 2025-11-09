@@ -302,6 +302,19 @@
             font-size: 0.75rem;
             margin-left: 0.5rem;
         }
+        
+        /* Navigation link styles */
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--primary-start);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -338,13 +351,13 @@
             <header class="mb-10 pt-4 glass-effect shadow-2xl rounded-xl border border-gray-800">
                 
                 <nav class="flex items-center justify-center space-x-8 py-2 text-sm font-semibold uppercase border-b border-gray-800">
-                    <a href="#dashboard" class="nav-link transition-colors" data-page="dashboard">
+                    <a href="#" class="nav-link transition-colors" data-page="dashboard">
                         <i data-lucide="layout-dashboard" class="inline-block w-4 h-4 mr-1"></i> DASHBOARD
                     </a>
-                    <a href="#scripts" class="nav-link transition-colors" data-page="scripts">
+                    <a href="#" class="nav-link transition-colors" data-page="scripts">
                         <i data-lucide="code" class="inline-block w-4 h-4 mr-1"></i> MANAGE SCRIPTS
                     </a>
-                    <a href="#categories" class="nav-link transition-colors" data-page="categories">
+                    <a href="#" class="nav-link transition-colors" data-page="categories">
                         <i data-lucide="folder" class="inline-block w-4 h-4 mr-1"></i> CATEGORIES
                     </a>
                 </nav>
@@ -413,11 +426,11 @@
                     <div class="glass-effect p-6 rounded-xl border border-gray-700">
                         <h3 class="text-lg font-bold mb-4 text-primary-start">Quick Actions</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <a href="#scripts" data-page="scripts" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-primary-start transition-colors text-center">
+                            <a href="#" data-page="scripts" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-primary-start transition-colors text-center">
                                 <i data-lucide="plus" class="w-8 h-8 text-primary-start mx-auto mb-2"></i>
                                 <p class="font-semibold">Add New Script</p>
                             </a>
-                            <a href="#categories" data-page="categories" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-blue-500 transition-colors text-center">
+                            <a href="#" data-page="categories" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-blue-500 transition-colors text-center">
                                 <i data-lucide="folder-plus" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
                                 <p class="font-semibold">Manage Categories</p>
                             </a>
@@ -774,6 +787,7 @@
             setupCategoryAutoFill();
             updateDashboardStats();
             updateCategoryStats();
+            setupNavigation(); // Make sure navigation is set up
         }
 
         async function loadScripts() {
@@ -1032,6 +1046,18 @@
                 });
             });
 
+            // Also set up navigation for quick action links
+            const quickActionLinks = document.querySelectorAll('a[data-page]');
+            quickActionLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    if(pageId && document.getElementById(`${pageId}-page`)) {
+                        showPage(pageId);
+                    }
+                });
+            });
+
             const initialHash = window.location.hash.substring(1) || 'dashboard';
             showPage(initialHash);
         }
@@ -1039,15 +1065,140 @@
         window.onload = function() {
             // Set up password screen first
             setupPasswordScreen();
-            
-            // Only set up navigation if authenticated
-            if (isAuthenticated) {
-                setupNavigation();
-            }
         };
 
         window.editScript = editScript;
         window.deleteScript = deleteScript;
+    </script>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2aS6EH_0Hbqj9RKwnjn9LMuHBv0GjLlw",
+            authDomain: "popamtas.firebaseapp.com",
+            projectId: "popamtas",
+            storageBucket: "popamtas.firebasestorage.app",
+            messagingSenderId: "1007544989709",
+            appId: "1:1007544989709:web:e6f719865e42bff4607d44",
+            measurementId: "G-K3RMWGN461"
+        };
+        
+        let app = null;
+        let db = null;
+        let auth = null;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    console.log(`User signed in: ${user.uid}`);
+                } else {
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Firebase Auth Error:", error);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+
+        window.firebaseDb = {
+            async addScript(scriptData) {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return null;
+                }
+                
+                try {
+                    const docRef = await addDoc(collection(db, "scripts"), {
+                        ...scriptData,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
+                    console.log("Script added with ID: ", docRef.id);
+                    return docRef.id;
+                } catch (error) {
+                    console.error("Error adding script: ", error);
+                    return null;
+                }
+            },
+            
+            async getAllScripts() {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return [];
+                }
+                
+                try {
+                    const querySnapshot = await getDocs(collection(db, "scripts"));
+                    const scripts = [];
+                    querySnapshot.forEach((doc) => {
+                        scripts.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    return scripts;
+                } catch (error) {
+                    console.error("Error getting scripts: ", error);
+                    return [];
+                }
+            },
+            
+            async updateScript(scriptId, scriptData) {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return false;
+                }
+                
+                try {
+                    const scriptRef = doc(db, "scripts", scriptId);
+                    await updateDoc(scriptRef, {
+                        ...scriptData,
+                        updatedAt: new Date()
+                    });
+                    console.log("Script updated: ", scriptId);
+                    return true;
+                } catch (error) {
+                    console.error("Error updating script: ", error);
+                    return false;
+                }
+            },
+            
+            async deleteScript(scriptId) {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return false;
+                }
+                
+                try {
+                    await deleteDoc(doc(db, "scripts", scriptId));
+                    console.log("Script deleted: ", scriptId);
+                    return true;
+                } catch (error) {
+                    console.error("Error deleting script: ", error);
+                    return false;
+                }
+            },
+
+            async getAllCategories() {
+                return [
+                    { name: "System Scripts", icon: "settings" },
+                    { name: "Server Backups", icon: "server" },
+                    { name: "Skin Scripts", icon: "user" },
+                    { name: "Vehicle Scripts", icon: "car" }
+                ];
+            }
+        };
     </script>
 </body>
 </html>
