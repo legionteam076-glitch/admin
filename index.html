@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        /* Your existing CSS styles remain the same */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
         :root {
@@ -188,6 +187,15 @@
         
         .toast.error {
             background-color: #ef4444;
+        }
+        
+        .nav-link[data-active="true"] {
+            color: var(--primary-start);
+            border-bottom: 2px solid var(--primary-start);
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -718,6 +726,7 @@
                 
                 try {
                     let success = false;
+                    let newScriptId = null;
                     
                     if (editingScriptId) {
                         success = await firebaseDb.updateScript(editingScriptId, scriptData);
@@ -727,17 +736,34 @@
                             resetForm();
                         }
                     } else {
-                        const scriptId = await firebaseDb.addScript(scriptData);
-                        success = !!scriptId;
+                        newScriptId = await firebaseDb.addScript(scriptData);
+                        success = !!newScriptId;
                         if (success) {
                             showToast("Script added successfully!");
                             form.reset();
+                            
+                            // Immediately add the new script to the local array and update UI
+                            if (newScriptId) {
+                                const newScript = {
+                                    id: newScriptId,
+                                    ...scriptData,
+                                    createdAt: { seconds: Math.floor(Date.now() / 1000) },
+                                    updatedAt: { seconds: Math.floor(Date.now() / 1000) }
+                                };
+                                scripts.push(newScript);
+                                renderScriptsList();
+                                updateDashboardStats();
+                                updateCategoryStats();
+                            }
                         }
                     }
 
-                    if (success) {
+                    if (success && editingScriptId) {
+                        // For edits, we need to reload from Firebase to get the updated data
                         await loadScripts();
-                    } else {
+                    }
+                    
+                    if (!success) {
                         showToast("Error saving script. Please try again.", 'error');
                     }
                 } catch (error) {
@@ -783,7 +809,11 @@
                     const success = await firebaseDb.deleteScript(scriptId);
                     if (success) {
                         showToast("Script deleted successfully!");
-                        await loadScripts();
+                        // Remove from local array and update UI
+                        scripts = scripts.filter(s => s.id !== scriptId);
+                        renderScriptsList();
+                        updateDashboardStats();
+                        updateCategoryStats();
                     } else {
                         showToast("Error deleting script. Please try again.", 'error');
                     }
@@ -810,8 +840,9 @@
                 link.setAttribute('data-active', isActive);
             });
 
+            // Always reload scripts when navigating to the scripts page
             if (pageId === 'scripts') {
-                initAdminPanel();
+                loadScripts();
             }
             
             history.pushState(null, null, `#${pageId}`);
