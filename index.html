@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZiroX Scripts - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script type="module">
+        import lucide from 'https://unpkg.com/lucide@latest';
+        lucide.createIcons();
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        :root {
+            --primary-start: #22c55e; /* Green start */
+            --primary-end: #10b981;   /* Green end */
+            --dark-bg: #0d0d0d; /* Even darker background */
+            --card-bg: #1a1a1a; /* Main card background */
+            --sidebar-bg: #121212; /* Sidebar contrast background */
+            --text-color: #f3f4f6;
+            --highlight-text: #22c55e;
+            --secondary-text: #a0a0a0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            /* Add subtle radial gradient to the background for depth */
+            background-image: radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.05), transparent 70%),
+                              radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05), transparent 70%);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-start) #1f2937;
+        }
+        
+        /* Custom Scrollbar for Aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--primary-start);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #1f2937;
+        }
+
+        /* Call-to-Action Buttons */
+        .primary-btn {
+            /* Use a linear gradient for the primary button */
+            background-image: linear-gradient(to right, var(--primary-start) 0%, var(--primary-end) 100%);
+            background-color: var(--primary-start); /* Fallback */
+            color: var(--dark-bg);
+            transition: all 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.6); /* Stronger shadow */
+            font-weight: 700;
+        }
+
+        .primary-btn:hover {
+            /* Slightly shift gradient on hover */
+            background-image: linear-gradient(to right, var(--primary-end) 0%, var(--primary-start) 100%);
+            transform: translateY(-2px); /* Lift more */
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.8);
+        }
+
+        /* Secondary (Outline) Button with Gradient Border */
+        .secondary-btn {
+            /* Gradient Border Technique */
+            border: 2px solid transparent;
+            background-clip: padding-box, border-box;
+            background-origin: padding-box, border-box;
+            background-image: linear-gradient(var(--sidebar-bg), var(--sidebar-bg)), linear-gradient(45deg, var(--primary-start), var(--primary-end));
+            color: var(--primary-start);
+            transition: all 0.3s;
+            font-weight: 700;
+        }
+
+        .secondary-btn:hover {
+            color: var(--dark-bg);
+            /* Flip to solid background gradient on hover */
+            background-image: linear-gradient(45deg, var(--primary-start), var(--primary-end));
+        }
+        
+        /* Top Navigation Link Hover Effect */
+        .nav-link {
+            transition: color 0.2s, background-color 0.2s;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 600; /* semi-bold */
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-start);
+            background-color: #2d2d2d;
+        }
+
+        .nav-link[data-active="true"] {
+            color: var(--primary-start);
+            background-color: #2d2d2d;
+        }
+
+        /* Logo Styling */
+        .site-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto; /* Center the logo */
+            padding: 0.5rem 0; /* Add some vertical padding */
+            max-width: 250px; /* Limit logo width */
+        }
+        .site-logo img {
+            height: 60px; /* Adjust height as needed */
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)); /* Subtle glow for the image */
+        }
+
+        /* Admin Panel Styles */
+        .admin-panel {
+            background-color: var(--sidebar-bg);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2d2d2d;
+        }
+
+        .form-input {
+            background-color: #2d2d2d;
+            border: 1px solid #3d3d3d;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: var(--text-color);
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-start);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--secondary-text);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .admin-table th {
+            background-color: #2d2d2d;
+            color: var(--primary-start);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .admin-table tr:hover {
+            background-color: #2d2d2d;
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-btn {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .delete-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setLogLevel, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2aS6EH_0Hbqj9RKwnjn9LMuHBv0GjLlw",
+            authDomain: "popamtas.firebaseapp.com",
+            projectId: "popamtas",
+            storageBucket: "popamtas.firebasestorage.app",
+            messagingSenderId: "1007544989709",
+            appId: "1:1007544989709:web:e6f719865e42bff4607d44",
+            measurementId: "G-K3RMWGN461"
+        };
+        
+        let app = null;
+        let db = null;
+        let auth = null;
+
+        // Initialize Firebase
+        try {
+            setLogLevel('Debug');
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // Authentication Setup
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    console.log(`User signed in: ${user.uid}`);
+                } else {
+                    console.log("No user, signing in anonymously...");
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Firebase Auth Error:", error);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+
+        // Firebase database functions for scripts
+        window.firebaseDb = {
+            // Add a new script to the database
+            async addScript(scriptData) {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return null;
+                }
+                
+                try {
+                    const docRef = await addDoc(collection(db, "scripts"), {
+                        ...scriptData,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
+                    console.log("Script added with ID: ", docRef.id);
+                    return docRef.id;
+                } catch (error) {
+                    console.error("Error adding script: ", error);
+                    return null;
+                }
+            },
+            
+            // Get all scripts from the database
+            async getAllScripts() {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return [];
+                }
+                
+                try {
+                    const querySnapshot = await getDocs(collection(db, "scripts"));
+                    const scripts = [];
+                    querySnapshot.forEach((doc) => {
+                        scripts.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    return scripts;
+                } catch (error) {
+                    console.error("Error getting scripts: ", error);
+                    return [];
+                }
+            },
+            
+            // Update an existing script
+            async updateScript(scriptId, scriptData) {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return false;
+                }
+                
+                try {
+                    const scriptRef = doc(db, "scripts", scriptId);
+                    await updateDoc(scriptRef, {
+                        ...scriptData,
+                        updatedAt: new Date()
+                    });
+                    console.log("Script updated: ", scriptId);
+                    return true;
+                } catch (error) {
+                    console.error("Error updating script: ", error);
+                    return false;
+                }
+            },
+            
+            // Delete a script from the database
+            async deleteScript(scriptId) {
+                if (!db) {
+                    console.error("Firebase not initialized");
+                    return false;
+                }
+                
+                try {
+                    await deleteDoc(doc(db, "scripts", scriptId));
+                    console.log("Script deleted: ", scriptId);
+                    return true;
+                } catch (error) {
+                    console.error("Error deleting script: ", error);
+                    return false;
+                }
+            }
+        };
+    </script>
+
+    <!-- Main Content Wrapper -->
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+
+        <!-- Top Header & Branding -->
+        <header class="mb-10 pt-4 bg-card-bg shadow-2xl rounded-xl border border-gray-800">
+            
+            <!-- Primary Navigation (Centered Links) - ADMIN ONLY NAVIGATION -->
+            <nav class="flex items-center justify-center space-x-8 py-2 text-sm font-semibold uppercase border-b border-gray-800">
+                <a href="#dashboard" class="nav-link transition-colors" data-page="dashboard">
+                    <i data-lucide="layout-dashboard" class="inline-block w-4 h-4 mr-1"></i> DASHBOARD
+                </a>
+                <a href="#scripts" class="nav-link transition-colors" data-page="scripts">
+                    <i data-lucide="code" class="inline-block w-4 h-4 mr-1"></i> MANAGE SCRIPTS
+                </a>
+                <a href="#analytics" class="nav-link transition-colors" data-page="analytics">
+                    <i data-lucide="bar-chart" class="inline-block w-4 h-4 mr-1"></i> ANALYTICS
+                </a>
+            </nav>
+
+            <!-- Main Action Bar -->
+            <div class="flex items-center justify-between px-4 py-4">
+                
+                <!-- Left: BACK TO SITE Button -->
+                <a href="vendor.html" class="px-4 py-2 secondary-btn rounded-lg text-sm font-bold flex items-center shadow-lg">
+                    <i data-lucide="arrow-left" class="inline-block w-4 h-4 mr-2"></i> BACK TO SITE
+                </a>
+
+                <!-- Center: Image Logo -->
+                <div class="site-logo">
+                    <img src="https://cdn.discordapp.com/attachments/1410591541596262460/1436992296611610674/gg.png?ex=69119edd&is=69104d5d&hm=015feff38ccf265f71ec4b5cace6ac582cceec59201ee7092141baf24f485f8c&" alt="ZiroX Scripts Logo" />
+                </div>
+
+                <!-- Right: ADMIN CONTROLS -->
+                <div class="flex items-center space-x-3">
+                    <!-- Logout Button -->
+                    <button class="px-4 py-2 secondary-btn rounded-lg text-sm font-bold flex items-center shadow-lg">
+                        <i data-lucide="log-out" class="inline-block w-4 h-4 mr-2"></i> LOGOUT
+                    </button>
+                    <!-- Admin Profile Button -->
+                    <button class="w-10 h-10 primary-btn rounded-lg flex items-center justify-center shadow-lg">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="page-content-container">
+
+            <!-- 1. DASHBOARD PAGE CONTENT -->
+            <div id="dashboard-page" class="page-view">
+                <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Admin Dashboard</h2>
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Scripts Card -->
+                    <div class="admin-panel text-center">
+                        <div class="w-12 h-12 bg-primary-start/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="code" class="w-6 h-6 text-primary-start"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1" id="total-scripts">0</h3>
+                        <p class="text-sm text-secondary-text">Total Scripts</p>
+                    </div>
+
+                    <!-- Total Downloads Card -->
+                    <div class="admin-panel text-center">
+                        <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="download" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1" id="total-downloads">0</h3>
+                        <p class="text-sm text-secondary-text">Total Downloads</p>
+                    </div>
+
+                    <!-- Active Users Card -->
+                    <div class="admin-panel text-center">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="users" class="w-6 h-6 text-green-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1" id="active-users">0</h3>
+                        <p class="text-sm text-secondary-text">Active Users</p>
+                    </div>
+
+                    <!-- Server Status Card -->
+                    <div class="admin-panel text-center">
+                        <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="server" class="w-6 h-6 text-purple-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1 text-primary-start">Online</h3>
+                        <p class="text-sm text-secondary-text">Server Status</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="admin-panel">
+                    <h3 class="text-lg font-bold mb-4 text-primary-start">Quick Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <a href="#scripts" data-page="scripts" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-primary-start transition-colors text-center">
+                            <i data-lucide="plus" class="w-8 h-8 text-primary-start mx-auto mb-2"></i>
+                            <p class="font-semibold">Add New Script</p>
+                        </a>
+                        <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-blue-500 transition-colors text-center">
+                            <i data-lucide="users" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
+                            <p class="font-semibold">Manage Users</p>
+                        </button>
+                        <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-green-500 transition-colors text-center">
+                            <i data-lucide="settings" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
+                            <p class="font-semibold">System Settings</p>
+                        </button>
+                        <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-purple-500 transition-colors text-center">
+                            <i data-lucide="bar-chart" class="w-8 h-8 text-purple-500 mx-auto mb-2"></i>
+                            <p class="font-semibold">View Reports</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. SCRIPTS MANAGEMENT PAGE CONTENT -->
+            <div id="scripts-page" class="page-view hidden">
+                <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Script Management</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Add Script Form -->
+                    <div class="lg:col-span-1">
+                        <div class="admin-panel">
+                            <h3 class="text-lg font-bold mb-4 text-primary-start" id="form-title">Add New Script</h3>
+                            <form id="script-form">
+                                <div class="mb-4">
+                                    <label for="script-title" class="form-label">Script Title</label>
+                                    <input type="text" id="script-title" class="form-input" placeholder="Enter script title" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="script-description" class="form-label">Description</label>
+                                    <textarea id="script-description" class="form-input" rows="3" placeholder="Enter script description" required></textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="script-thumbnail" class="form-label">Thumbnail URL</label>
+                                    <input type="url" id="script-thumbnail" class="form-input" placeholder="Enter thumbnail image URL" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="script-download" class="form-label">Download Link</label>
+                                    <input type="url" id="script-download" class="form-input" placeholder="Enter download link" required>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="submit" class="primary-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center">
+                                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i> <span id="submit-text">ADD SCRIPT</span>
+                                    </button>
+                                    <button type="button" id="clear-form" class="secondary-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> CLEAR
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Scripts List -->
+                    <div class="lg:col-span-2">
+                        <div class="admin-panel">
+                            <h3 class="text-lg font-bold mb-4 text-primary-start">Manage Scripts</h3>
+                            <div class="overflow-x-auto">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scripts-list">
+                                        <!-- Scripts will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ANALYTICS PAGE CONTENT -->
+            <div id="analytics-page" class="page-view hidden">
+                <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Analytics Dashboard</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Download Statistics -->
+                    <div class="admin-panel">
+                        <h3 class="text-lg font-bold mb-4 text-primary-start">Download Statistics</h3>
+                        <div class="h-64 bg-card-bg rounded-lg border border-gray-700 flex items-center justify-center">
+                            <p class="text-secondary-text">Download charts will be displayed here</p>
+                        </div>
+                    </div>
+
+                    <!-- User Activity -->
+                    <div class="admin-panel">
+                        <h3 class="text-lg font-bold mb-4 text-primary-start">User Activity</h3>
+                        <div class="h-64 bg-card-bg rounded-lg border border-gray-700 flex items-center justify-center">
+                            <p class="text-secondary-text">User activity charts will be displayed here</p>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="lg:col-span-2">
+                        <div class="admin-panel">
+                            <h3 class="text-lg font-bold mb-4 text-primary-start">Recent Activity</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-card-bg rounded-lg border border-gray-700">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-primary-start rounded-full flex items-center justify-center">
+                                            <i data-lucide="download" class="w-4 h-4 text-white"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold">New script download</p>
+                                            <p class="text-xs text-secondary-text">NEX SCOREBOARD was downloaded by user123</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-secondary-text">2 hours ago</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-card-bg rounded-lg border border-gray-700">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <i data-lucide="user-plus" class="w-4 h-4 text-white"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold">New user registered</p>
+                                            <p class="text-xs text-secondary-text">newuser456 joined the community</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-secondary-text">5 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 pt-6 border-t border-gray-800 text-center text-xs text-secondary-text">
+            <p class="uppercase font-bold mb-2">ZiroX Scripts Admin Panel</p>
+            <p>Secure script management system</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // Firebase Database Management
+        let scripts = [];
+        let editingScriptId = null;
+
+        // Initialize the admin panel
+        async function initAdminPanel() {
+            await loadScripts();
+            setupFormHandlers();
+            updateDashboardStats();
+        }
+
+        // Load scripts from Firebase
+        async function loadScripts() {
+            try {
+                scripts = await firebaseDb.getAllScripts();
+                renderScriptsList();
+                updateDashboardStats();
+            } catch (error) {
+                console.error("Error loading scripts:", error);
+            }
+        }
+
+        // Update dashboard statistics
+        function updateDashboardStats() {
+            document.getElementById('total-scripts').textContent = scripts.length;
+            // In a real application, you would fetch these from your database
+            document.getElementById('total-downloads').textContent = '1,247';
+            document.getElementById('active-users').textContent = '89';
+        }
+
+        // Render the scripts list in the admin panel
+        function renderScriptsList() {
+            const scriptsList = document.getElementById('scripts-list');
+            if (!scriptsList) return;
+
+            scriptsList.innerHTML = scripts.map(script => {
+                const createdDate = script.createdAt ? new Date(script.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                return `
+                <tr>
+                    <td class="font-semibold">${script.title}</td>
+                    <td class="text-sm text-secondary-text">${createdDate}</td>
+                    <td>
+                        <button class="action-btn edit-btn mr-2" onclick="editScript('${script.id}')">
+                            <i data-lucide="edit" class="w-3 h-3 mr-1"></i> Edit
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteScript('${script.id}')">
+                            <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Set up form handlers for the admin panel
+        function setupFormHandlers() {
+            const form = document.getElementById('script-form');
+            const clearBtn = document.getElementById('clear-form');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const title = document.getElementById('script-title').value;
+                const description = document.getElementById('script-description').value;
+                const thumbnail = document.getElementById('script-thumbnail').value;
+                const downloadLink = document.getElementById('script-download').value;
+
+                const scriptData = {
+                    title,
+                    description,
+                    img: thumbnail,
+                    downloadLink,
+                    price: "FREE" // All scripts are free
+                };
+
+                let success = false;
+                
+                if (editingScriptId) {
+                    // Update existing script
+                    success = await firebaseDb.updateScript(editingScriptId, scriptData);
+                    if (success) {
+                        alert("Script updated successfully!");
+                        editingScriptId = null;
+                        resetForm();
+                    }
+                } else {
+                    // Add new script
+                    const scriptId = await firebaseDb.addScript(scriptData);
+                    success = !!scriptId;
+                    if (success) {
+                        alert("Script added successfully!");
+                        form.reset();
+                    }
+                }
+
+                if (success) {
+                    await loadScripts(); // Reload the scripts list
+                } else {
+                    alert("Error saving script. Please try again.");
+                }
+            });
+
+            clearBtn.addEventListener('click', () => {
+                resetForm();
+            });
+        }
+
+        // Reset form to add mode
+        function resetForm() {
+            document.getElementById('script-form').reset();
+            editingScriptId = null;
+            document.getElementById('form-title').textContent = 'Add New Script';
+            document.getElementById('submit-text').textContent = 'ADD SCRIPT';
+        }
+
+        // Edit a script
+        function editScript(scriptId) {
+            const script = scripts.find(s => s.id === scriptId);
+            if (!script) return;
+
+            document.getElementById('script-title').value = script.title;
+            document.getElementById('script-description').value = script.description;
+            document.getElementById('script-thumbnail').value = script.img;
+            document.getElementById('script-download').value = script.downloadLink;
+
+            editingScriptId = scriptId;
+            document.getElementById('form-title').textContent = 'Edit Script';
+            document.getElementById('submit-text').textContent = 'UPDATE SCRIPT';
+            
+            // Scroll to the form
+            document.getElementById('script-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Delete a script
+        async function deleteScript(scriptId) {
+            if (confirm("Are you sure you want to delete this script?")) {
+                const success = await firebaseDb.deleteScript(scriptId);
+                if (success) {
+                    alert("Script deleted successfully!");
+                    await loadScripts();
+                } else {
+                    alert("Error deleting script. Please try again.");
+                }
+            }
+        }
+        
+        /**
+         * Simple SPA routing function to show the selected page.
+         * @param {string} pageId - The ID of the page to show (e.g., 'dashboard', 'scripts', 'analytics').
+         */
+        function showPage(pageId) {
+            const views = document.querySelectorAll('.page-view');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            views.forEach(view => {
+                view.classList.add('hidden');
+                if (view.id === `${pageId}-page`) {
+                    view.classList.remove('hidden');
+                }
+            });
+
+            navLinks.forEach(link => {
+                const isActive = link.getAttribute('data-page') === pageId;
+                link.setAttribute('data-active', isActive);
+            });
+
+            // If the scripts page is shown, ensure admin panel is initialized
+            if (pageId === 'scripts') {
+                initAdminPanel();
+            }
+            
+            // Update the URL hash without reloading
+            history.pushState(null, null, `#${pageId}`);
+        }
+
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    // Check if the page view exists before navigating
+                    if(pageId && document.getElementById(`${pageId}-page`)) {
+                        showPage(pageId);
+                    } else if (pageId) {
+                         // Still update the active state even if the page doesn't exist (e.g., placeholder links)
+                        navLinks.forEach(l => l.setAttribute('data-active', l.getAttribute('data-page') === pageId));
+                    }
+                });
+            });
+
+            // Initial load based on URL hash or default to dashboard
+            const initialHash = window.location.hash.substring(1) || 'dashboard';
+            showPage(initialHash);
+        }
+
+        // Wait for the window to load before running the renderer and setting up navigation
+        window.onload = function() {
+            setupNavigation();
+            initAdminPanel();
+        };
+
+        // Make functions available globally
+        window.editScript = editScript;
+        window.deleteScript = deleteScript;
+    </script>
+</body>
+</html>
