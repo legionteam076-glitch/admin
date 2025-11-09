@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZiroX Scripts - Admin Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Local Tailwind CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.1/tailwind.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -24,7 +25,6 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--dark-bg);
             background-image: 
-                url('https://cdn.discordapp.com/attachments/1367875717450174556/1437010205144780810/background.webp?ex=6911af8b&is=69105e0b&hm=2d1c0022ca6f38ad1fffcf8559666d0c8acf8083fa331bbd6e2419a320f48033&'),
                 radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.05), transparent 70%),
                 radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05), transparent 70%);
             background-blend-mode: overlay;
@@ -193,167 +193,18 @@
             color: var(--primary-start);
             border-bottom: 2px solid var(--primary-start);
         }
+        
+        .page-view {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="antialiased">
-
-    <!-- Firebase SDK Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2aS6EH_0Hbqj9RKwnjn9LMuHBv0GjLlw",
-            authDomain: "popamtas.firebaseapp.com",
-            projectId: "popamtas",
-            storageBucket: "popamtas.firebasestorage.app",
-            messagingSenderId: "1007544989709",
-            appId: "1:1007544989709:web:e6f719865e42bff4607d44",
-            measurementId: "G-K3RMWGN461"
-        };
-        
-        let app = null;
-        let db = null;
-        let auth = null;
-
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            // Sign in anonymously
-            signInAnonymously(auth)
-                .then(() => {
-                    console.log("Signed in anonymously");
-                })
-                .catch((error) => {
-                    console.error("Anonymous sign-in failed:", error);
-                });
-                
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-        }
-
-        window.firebaseDb = {
-            async waitForAuth() {
-                return new Promise((resolve) => {
-                    const unsubscribe = onAuthStateChanged(auth, (user) => {
-                        unsubscribe();
-                        resolve(user);
-                    });
-                });
-            },
-            
-            async addScript(scriptData) {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return null;
-                }
-                
-                try {
-                    // Wait for authentication
-                    const user = await this.waitForAuth();
-                    if (!user) {
-                        console.error("Not authenticated");
-                        return null;
-                    }
-                    
-                    const docRef = await addDoc(collection(db, "scripts"), {
-                        ...scriptData,
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    });
-                    console.log("Script added with ID: ", docRef.id);
-                    return docRef.id;
-                } catch (error) {
-                    console.error("Error adding script: ", error);
-                    return null;
-                }
-            },
-            
-            async getAllScripts() {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return [];
-                }
-                
-                try {
-                    const querySnapshot = await getDocs(collection(db, "scripts"));
-                    const scripts = [];
-                    querySnapshot.forEach((doc) => {
-                        scripts.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    });
-                    return scripts;
-                } catch (error) {
-                    console.error("Error getting scripts: ", error);
-                    return [];
-                }
-            },
-            
-            async updateScript(scriptId, scriptData) {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return false;
-                }
-                
-                try {
-                    // Wait for authentication
-                    const user = await this.waitForAuth();
-                    if (!user) {
-                        console.error("Not authenticated");
-                        return false;
-                    }
-                    
-                    const scriptRef = doc(db, "scripts", scriptId);
-                    await updateDoc(scriptRef, {
-                        ...scriptData,
-                        updatedAt: new Date()
-                    });
-                    console.log("Script updated: ", scriptId);
-                    return true;
-                } catch (error) {
-                    console.error("Error updating script: ", error);
-                    return false;
-                }
-            },
-            
-            async deleteScript(scriptId) {
-                if (!db) {
-                    console.error("Firebase not initialized");
-                    return false;
-                }
-                
-                try {
-                    // Wait for authentication
-                    const user = await this.waitForAuth();
-                    if (!user) {
-                        console.error("Not authenticated");
-                        return false;
-                    }
-                    
-                    await deleteDoc(doc(db, "scripts", scriptId));
-                    console.log("Script deleted: ", scriptId);
-                    return true;
-                } catch (error) {
-                    console.error("Error deleting script: ", error);
-                    return false;
-                }
-            },
-
-            async getAllCategories() {
-                return [
-                    { name: "System Scripts", icon: "settings" },
-                    { name: "Server Backups", icon: "server" },
-                    { name: "Skin Scripts", icon: "user" },
-                    { name: "Vehicle Scripts", icon: "car" }
-                ];
-            }
-        };
-    </script>
 
     <div class="container mx-auto px-4 py-8 max-w-7xl">
 
@@ -378,7 +229,7 @@
                 </a>
 
                 <div class="site-logo">
-                    <img src="https://cdn.discordapp.com/attachments/1410591541596262460/1436992296611610674/gg.png?ex=69119edd&is=69104d5d&hm=015feff38ccf265f71ec4b5cace6ac582cceec59201ee7092141baf24f485f8c&" alt="ZiroX Scripts Logo" />
+                    <div class="text-2xl font-bold text-primary-start">ZIROX SCRIPTS</div>
                 </div>
 
                 <div class="flex items-center space-x-3">
@@ -601,8 +452,10 @@
     <div id="toast" class="toast"></div>
 
     <script>
+        // Initialize Lucide icons
         lucide.createIcons();
 
+        // Application state
         let scripts = [];
         let categories = [];
         let editingScriptId = null;
@@ -635,17 +488,20 @@
             }
         }
 
-        async function initAdminPanel() {
-            await loadScripts();
-            await loadCategories();
+        // Initialize the admin panel
+        function initAdminPanel() {
+            loadScripts();
+            loadCategories();
             setupFormHandlers();
             updateDashboardStats();
             updateCategoryStats();
         }
 
-        async function loadScripts() {
+        // Load scripts from localStorage (simulating database)
+        function loadScripts() {
             try {
-                scripts = await firebaseDb.getAllScripts();
+                const storedScripts = localStorage.getItem('zirox-scripts');
+                scripts = storedScripts ? JSON.parse(storedScripts) : [];
                 renderScriptsList();
                 updateDashboardStats();
                 updateCategoryStats();
@@ -655,18 +511,22 @@
             }
         }
 
-        async function loadCategories() {
-            try {
-                categories = await firebaseDb.getAllCategories();
-            } catch (error) {
-                console.error("Error loading categories:", error);
-            }
+        // Load categories
+        function loadCategories() {
+            categories = [
+                { name: "System Scripts", icon: "settings" },
+                { name: "Server Backups", icon: "server" },
+                { name: "Skin Scripts", icon: "user" },
+                { name: "Vehicle Scripts", icon: "car" }
+            ];
         }
 
+        // Update dashboard statistics
         function updateDashboardStats() {
             document.getElementById('total-scripts').textContent = scripts.length;
         }
 
+        // Update category statistics
         function updateCategoryStats() {
             const systemCount = scripts.filter(s => s.category === 'System Scripts').length;
             const backupCount = scripts.filter(s => s.category === 'Server Backups').length;
@@ -679,6 +539,7 @@
             document.getElementById('vehicle-count').textContent = vehicleCount;
         }
 
+        // Render scripts list in the table
         function renderScriptsList() {
             const scriptsList = document.getElementById('scripts-list');
             if (!scriptsList) return;
@@ -697,7 +558,7 @@
             }
 
             scriptsList.innerHTML = scripts.map(script => {
-                const createdDate = script.createdAt ? new Date(script.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                const createdDate = script.createdAt ? new Date(script.createdAt).toLocaleDateString() : 'N/A';
                 return `
                 <tr>
                     <td class="font-semibold">${script.title}</td>
@@ -718,11 +579,12 @@
             lucide.createIcons();
         }
 
+        // Setup form handlers
         function setupFormHandlers() {
             const form = document.getElementById('script-form');
             const clearBtn = document.getElementById('clear-form');
 
-            form.addEventListener('submit', async (e) => {
+            form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
                 const title = document.getElementById('script-title').value.trim();
@@ -752,15 +614,33 @@
                     let success = false;
                     
                     if (editingScriptId) {
-                        success = await firebaseDb.updateScript(editingScriptId, scriptData);
+                        // Update existing script
+                        const scriptIndex = scripts.findIndex(s => s.id === editingScriptId);
+                        if (scriptIndex !== -1) {
+                            scripts[scriptIndex] = {
+                                ...scripts[scriptIndex],
+                                ...scriptData,
+                                updatedAt: new Date()
+                            };
+                            success = true;
+                        }
+                        
                         if (success) {
                             showToast("Script updated successfully!");
                             editingScriptId = null;
                             resetForm();
                         }
                     } else {
-                        const scriptId = await firebaseDb.addScript(scriptData);
-                        success = !!scriptId;
+                        // Add new script
+                        const newScript = {
+                            id: 'script-' + Date.now(),
+                            ...scriptData,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        };
+                        scripts.push(newScript);
+                        success = true;
+                        
                         if (success) {
                             showToast("Script added successfully!");
                             form.reset();
@@ -768,7 +648,9 @@
                     }
 
                     if (success) {
-                        await loadScripts();
+                        // Save to localStorage
+                        localStorage.setItem('zirox-scripts', JSON.stringify(scripts));
+                        loadScripts();
                     } else {
                         showToast("Error saving script. Please try again.", 'error');
                     }
@@ -785,6 +667,7 @@
             });
         }
 
+        // Reset form
         function resetForm() {
             document.getElementById('script-form').reset();
             editingScriptId = null;
@@ -792,6 +675,7 @@
             document.getElementById('submit-text').textContent = 'ADD SCRIPT';
         }
 
+        // Edit script
         function editScript(scriptId) {
             const script = scripts.find(s => s.id === scriptId);
             if (!script) return;
@@ -809,16 +693,14 @@
             document.getElementById('script-form').scrollIntoView({ behavior: 'smooth' });
         }
 
-        async function deleteScript(scriptId) {
+        // Delete script
+        function deleteScript(scriptId) {
             if (confirm("Are you sure you want to delete this script?")) {
                 try {
-                    const success = await firebaseDb.deleteScript(scriptId);
-                    if (success) {
-                        showToast("Script deleted successfully!");
-                        await loadScripts();
-                    } else {
-                        showToast("Error deleting script. Please try again.", 'error');
-                    }
+                    scripts = scripts.filter(s => s.id !== scriptId);
+                    localStorage.setItem('zirox-scripts', JSON.stringify(scripts));
+                    showToast("Script deleted successfully!");
+                    loadScripts();
                 } catch (error) {
                     console.error("Delete error:", error);
                     showToast("Error deleting script. Please try again.", 'error');
@@ -826,6 +708,7 @@
             }
         }
         
+        // Show page
         function showPage(pageId) {
             const views = document.querySelectorAll('.page-view');
             const navLinks = document.querySelectorAll('.nav-link');
@@ -858,6 +741,7 @@
             history.pushState(null, null, `#${pageId}`);
         }
 
+        // Setup navigation
         function setupNavigation() {
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => {
@@ -874,11 +758,13 @@
             showPage(initialHash);
         }
 
+        // Initialize when page loads
         window.onload = function() {
             setupNavigation();
             initAdminPanel();
         };
 
+        // Make functions globally available
         window.editScript = editScript;
         window.deleteScript = deleteScript;
     </script>
