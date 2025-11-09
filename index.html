@@ -197,9 +197,127 @@
         .hidden {
             display: none;
         }
+
+        /* Password Screen Styles */
+        #password-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark-bg);
+            background-image: 
+                url('https://cdn.discordapp.com/attachments/1367875717450174556/1437010205144780810/background.webp?ex=6911af8b&is=69105e0b&hm=2d1c0022ca6f38ad1fffcf8559666d0c8acf8083fa331bbd6e2419a320f48033&'),
+                radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.05), transparent 70%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05), transparent 70%);
+            background-blend-mode: overlay;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .password-container {
+            background: rgba(13, 13, 13, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .password-logo {
+            margin-bottom: 1.5rem;
+        }
+
+        .password-logo img {
+            height: 70px;
+            width: auto;
+        }
+
+        .password-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .password-subtitle {
+            color: var(--secondary-text);
+            margin-bottom: 2rem;
+        }
+
+        .password-input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #2d2d2d;
+            border: 1px solid #3d3d3d;
+            border-radius: 0.5rem;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: var(--primary-start);
+        }
+
+        .password-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .password-error.show {
+            display: block;
+        }
+
+        .password-attempts {
+            color: var(--secondary-text);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body class="antialiased">
+
+    <!-- Password Screen -->
+    <div id="password-screen">
+        <div class="password-container">
+            <div class="password-logo">
+                <img src="https://cdn.discordapp.com/attachments/1410591541596262460/1436992296611610674/gg.png?ex=69119edd&is=69104d5d&hm=015feff38ccf265f71ec4b5cace6ac582cceec59201ee7092141baf24f485f8c&" alt="ZiroX Scripts Logo" />
+            </div>
+            <h1 class="password-title">Admin Access Required</h1>
+            <p class="password-subtitle">Enter your password to access the admin panel</p>
+            
+            <form id="password-form">
+                <div class="password-input-group">
+                    <input type="password" id="password-input" class="password-input" placeholder="Enter admin password" required autofocus>
+                    <div id="password-error" class="password-error">Incorrect password. Please try again.</div>
+                </div>
+                <button type="submit" id="password-submit" class="primary-btn w-full py-3 rounded-lg text-sm font-bold">
+                    <i data-lucide="shield" class="inline-block w-4 h-4 mr-2"></i> ACCESS ADMIN PANEL
+                </button>
+            </form>
+            
+            <div id="password-attempts" class="password-attempts">
+                Attempts remaining: <span id="attempts-count">3</span>
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase SDK Imports -->
     <script type="module">
@@ -331,246 +449,249 @@
         };
     </script>
 
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Main Admin Panel (Initially Hidden) -->
+    <div id="admin-panel" class="hidden">
+        <div class="container mx-auto px-4 py-8 max-w-7xl">
 
-        <header class="mb-10 pt-4 glass-effect shadow-2xl rounded-xl border border-gray-800">
-            
-            <nav class="flex items-center justify-center space-x-8 py-2 text-sm font-semibold uppercase border-b border-gray-800">
-                <a href="#dashboard" class="nav-link transition-colors" data-page="dashboard">
-                    <i data-lucide="layout-dashboard" class="inline-block w-4 h-4 mr-1"></i> DASHBOARD
-                </a>
-                <a href="#scripts" class="nav-link transition-colors" data-page="scripts">
-                    <i data-lucide="code" class="inline-block w-4 h-4 mr-1"></i> MANAGE SCRIPTS
-                </a>
-                <a href="#categories" class="nav-link transition-colors" data-page="categories">
-                    <i data-lucide="folder" class="inline-block w-4 h-4 mr-1"></i> CATEGORIES
-                </a>
-            </nav>
-
-            <div class="flex items-center justify-between px-4 py-4">
+            <header class="mb-10 pt-4 glass-effect shadow-2xl rounded-xl border border-gray-800">
                 
-                <a href="vendor.html" class="px-4 py-2 secondary-btn rounded-lg text-sm font-bold flex items-center shadow-lg">
-                    <i data-lucide="arrow-left" class="inline-block w-4 h-4 mr-2"></i> BACK TO SITE
-                </a>
+                <nav class="flex items-center justify-center space-x-8 py-2 text-sm font-semibold uppercase border-b border-gray-800">
+                    <a href="#dashboard" class="nav-link transition-colors" data-page="dashboard">
+                        <i data-lucide="layout-dashboard" class="inline-block w-4 h-4 mr-1"></i> DASHBOARD
+                    </a>
+                    <a href="#scripts" class="nav-link transition-colors" data-page="scripts">
+                        <i data-lucide="code" class="inline-block w-4 h-4 mr-1"></i> MANAGE SCRIPTS
+                    </a>
+                    <a href="#categories" class="nav-link transition-colors" data-page="categories">
+                        <i data-lucide="folder" class="inline-block w-4 h-4 mr-1"></i> CATEGORIES
+                    </a>
+                </nav>
 
-                <div class="site-logo">
-                    <img src="https://cdn.discordapp.com/attachments/1410591541596262460/1436992296611610674/gg.png?ex=69119edd&is=69104d5d&hm=015feff38ccf265f71ec4b5cace6ac582cceec59201ee7092141baf24f485f8c&" alt="ZiroX Scripts Logo" />
-                </div>
+                <div class="flex items-center justify-between px-4 py-4">
+                    
+                    <a href="vendor.html" class="px-4 py-2 secondary-btn rounded-lg text-sm font-bold flex items-center shadow-lg">
+                        <i data-lucide="arrow-left" class="inline-block w-4 h-4 mr-2"></i> BACK TO SITE
+                    </a>
 
-                <div class="flex items-center space-x-3">
-                    <button class="px-4 py-2 secondary-btn rounded-lg text-sm font-bold flex items-center shadow-lg">
-                        <i data-lucide="log-out" class="inline-block w-4 h-4 mr-2"></i> LOGOUT
-                    </button>
-                    <button class="w-10 h-10 primary-btn rounded-lg flex items-center justify-center shadow-lg">
-                        <i data-lucide="shield" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <main id="page-content-container">
-
-            <!-- Dashboard Page -->
-            <div id="dashboard-page" class="page-view">
-                <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Admin Dashboard</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
-                        <div class="w-12 h-12 bg-primary-start/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="code" class="w-6 h-6 text-primary-start"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-1" id="total-scripts">0</h3>
-                        <p class="text-sm text-secondary-text">Total Scripts</p>
+                    <div class="site-logo">
+                        <img src="https://cdn.discordapp.com/attachments/1410591541596262460/1436992296611610674/gg.png?ex=69119edd&is=69104d5d&hm=015feff38ccf265f71ec4b5cace6ac582cceec59201ee7092141baf24f485f8c&" alt="ZiroX Scripts Logo" />
                     </div>
 
-                    <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
-                        <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="download" class="w-6 h-6 text-blue-500"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-1">1,247</h3>
-                        <p class="text-sm text-secondary-text">Total Downloads</p>
-                    </div>
-
-                    <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
-                        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="users" class="w-6 h-6 text-green-500"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-1">89</h3>
-                        <p class="text-sm text-secondary-text">Active Users</p>
-                    </div>
-
-                    <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
-                        <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="server" class="w-6 h-6 text-purple-500"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-1 text-primary-start">Online</h3>
-                        <p class="text-sm text-secondary-text">Server Status</p>
-                    </div>
-                </div>
-
-                <div class="glass-effect p-6 rounded-xl border border-gray-700">
-                    <h3 class="text-lg font-bold mb-4 text-primary-start">Quick Actions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <a href="#scripts" data-page="scripts" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-primary-start transition-colors text-center">
-                            <i data-lucide="plus" class="w-8 h-8 text-primary-start mx-auto mb-2"></i>
-                            <p class="font-semibold">Add New Script</p>
-                        </a>
-                        <a href="#categories" data-page="categories" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-blue-500 transition-colors text-center">
-                            <i data-lucide="folder-plus" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
-                            <p class="font-semibold">Manage Categories</p>
-                        </a>
-                        <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-green-500 transition-colors text-center">
-                            <i data-lucide="settings" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
-                            <p class="font-semibold">System Settings</p>
+                    <div class="flex items-center space-x-3">
+                        <button class="px-4 py-2 secondary-btn rounded-lg text-sm font-bold flex items-center shadow-lg">
+                            <i data-lucide="log-out" class="inline-block w-4 h-4 mr-2"></i> LOGOUT
                         </button>
-                        <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-purple-500 transition-colors text-center">
-                            <i data-lucide="bar-chart" class="w-8 h-8 text-purple-500 mx-auto mb-2"></i>
-                            <p class="font-semibold">View Reports</p>
+                        <button class="w-10 h-10 primary-btn rounded-lg flex items-center justify-center shadow-lg">
+                            <i data-lucide="shield" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <!-- Scripts Management Page -->
-            <div id="scripts-page" class="page-view hidden">
-                <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Script Management</h2>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1">
-                        <div class="glass-effect p-6 rounded-xl border border-gray-700">
-                            <h3 class="text-lg font-bold mb-4 text-primary-start" id="form-title">Add New Script</h3>
-                            <form id="script-form">
-                                <div class="mb-4">
-                                    <label for="script-title" class="form-label">Script Title</label>
-                                    <input type="text" id="script-title" class="form-input" placeholder="Enter script title" required>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="script-description" class="form-label">Description</label>
-                                    <textarea id="script-description" class="form-input" rows="3" placeholder="Enter script description" required></textarea>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="script-category" class="form-label">Category</label>
-                                    <select id="script-category" class="form-input" required>
-                                        <option value="">Select Category</option>
-                                        <option value="System Scripts">System Scripts</option>
-                                        <option value="Server Backups">Server Backups</option>
-                                        <option value="Skin Scripts">Skin Scripts</option>
-                                        <option value="Vehicle Scripts">Vehicle Scripts</option>
-                                    </select>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="script-thumbnail" class="form-label">Thumbnail URL</label>
-                                    <input type="url" id="script-thumbnail" class="form-input" placeholder="Enter thumbnail image URL" required>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="script-download" class="form-label">Download Link</label>
-                                    <input type="url" id="script-download" class="form-input" placeholder="Enter download link" required>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button type="submit" id="submit-btn" class="primary-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center">
-                                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i> <span id="submit-text">ADD SCRIPT</span>
-                                    </button>
-                                    <button type="button" id="clear-form" class="secondary-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center">
-                                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> CLEAR
-                                    </button>
-                                </div>
-                            </form>
+            <main id="page-content-container">
+
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-view">
+                    <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Admin Dashboard</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
+                            <div class="w-12 h-12 bg-primary-start/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="code" class="w-6 h-6 text-primary-start"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-1" id="total-scripts">0</h3>
+                            <p class="text-sm text-secondary-text">Total Scripts</p>
                         </div>
-                    </div>
 
-                    <div class="lg:col-span-2">
-                        <div class="glass-effect p-6 rounded-xl border border-gray-700">
-                            <h3 class="text-lg font-bold mb-4 text-primary-start">Manage Scripts</h3>
-                            <div class="overflow-x-auto">
-                                <table class="admin-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Category</th>
-                                            <th>Created</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="scripts-list">
-                                        <!-- Scripts will be populated here -->
-                                    </tbody>
-                                </table>
+                        <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
+                            <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="download" class="w-6 h-6 text-blue-500"></i>
                             </div>
+                            <h3 class="text-2xl font-bold mb-1">1,247</h3>
+                            <p class="text-sm text-secondary-text">Total Downloads</p>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Categories Management Page -->
-            <div id="categories-page" class="page-view hidden">
-                <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Category Management</h2>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="glass-effect p-6 rounded-xl border border-gray-700">
-                        <h3 class="text-lg font-bold mb-4 text-primary-start">Available Categories</h3>
-                        <div class="grid grid-cols-2 gap-4" id="categories-grid">
-                            <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
-                                <i data-lucide="settings" class="w-6 h-6 text-primary-start"></i>
-                                <div>
-                                    <p class="font-semibold">System Scripts</p>
-                                    <p class="text-xs text-secondary-text">Core system scripts</p>
-                                </div>
+                        <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
+                            <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="users" class="w-6 h-6 text-green-500"></i>
                             </div>
-                            <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
-                                <i data-lucide="server" class="w-6 h-6 text-blue-500"></i>
-                                <div>
-                                    <p class="font-semibold">Server Backups</p>
-                                    <p class="text-xs text-secondary-text">Server backup scripts</p>
-                                </div>
+                            <h3 class="text-2xl font-bold mb-1">89</h3>
+                            <p class="text-sm text-secondary-text">Active Users</p>
+                        </div>
+
+                        <div class="glass-effect p-6 rounded-xl border border-gray-700 text-center">
+                            <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="server" class="w-6 h-6 text-purple-500"></i>
                             </div>
-                            <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
-                                <i data-lucide="user" class="w-6 h-6 text-green-500"></i>
-                                <div>
-                                    <p class="font-semibold">Skin Scripts</p>
-                                    <p class="text-xs text-secondary-text">Character skin scripts</p>
-                                </div>
-                            </div>
-                            <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
-                                <i data-lucide="car" class="w-6 h-6 text-purple-500"></i>
-                                <div>
-                                    <p class="font-semibold">Vehicle Scripts</p>
-                                    <p class="text-xs text-secondary-text">Vehicle-related scripts</p>
-                                </div>
-                            </div>
+                            <h3 class="text-2xl font-bold mb-1 text-primary-start">Online</h3>
+                            <p class="text-sm text-secondary-text">Server Status</p>
                         </div>
                     </div>
 
                     <div class="glass-effect p-6 rounded-xl border border-gray-700">
-                        <h3 class="text-lg font-bold mb-4 text-primary-start">Category Statistics</h3>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
-                                <span class="font-semibold">System Scripts</span>
-                                <span class="bg-primary-start/20 text-primary-start px-2 py-1 rounded-full text-sm" id="system-count">0</span>
+                        <h3 class="text-lg font-bold mb-4 text-primary-start">Quick Actions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <a href="#scripts" data-page="scripts" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-primary-start transition-colors text-center">
+                                <i data-lucide="plus" class="w-8 h-8 text-primary-start mx-auto mb-2"></i>
+                                <p class="font-semibold">Add New Script</p>
+                            </a>
+                            <a href="#categories" data-page="categories" class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-blue-500 transition-colors text-center">
+                                <i data-lucide="folder-plus" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
+                                <p class="font-semibold">Manage Categories</p>
+                            </a>
+                            <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-green-500 transition-colors text-center">
+                                <i data-lucide="settings" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
+                                <p class="font-semibold">System Settings</p>
+                            </button>
+                            <button class="p-4 bg-card-bg rounded-lg border border-gray-700 hover:border-purple-500 transition-colors text-center">
+                                <i data-lucide="bar-chart" class="w-8 h-8 text-purple-500 mx-auto mb-2"></i>
+                                <p class="font-semibold">View Reports</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scripts Management Page -->
+                <div id="scripts-page" class="page-view hidden">
+                    <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Script Management</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1">
+                            <div class="glass-effect p-6 rounded-xl border border-gray-700">
+                                <h3 class="text-lg font-bold mb-4 text-primary-start" id="form-title">Add New Script</h3>
+                                <form id="script-form">
+                                    <div class="mb-4">
+                                        <label for="script-title" class="form-label">Script Title</label>
+                                        <input type="text" id="script-title" class="form-input" placeholder="Enter script title" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="script-description" class="form-label">Description</label>
+                                        <textarea id="script-description" class="form-input" rows="3" placeholder="Enter script description" required></textarea>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="script-category" class="form-label">Category</label>
+                                        <select id="script-category" class="form-input" required>
+                                            <option value="">Select Category</option>
+                                            <option value="System Scripts">System Scripts</option>
+                                            <option value="Server Backups">Server Backups</option>
+                                            <option value="Skin Scripts">Skin Scripts</option>
+                                            <option value="Vehicle Scripts">Vehicle Scripts</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="script-thumbnail" class="form-label">Thumbnail URL</label>
+                                        <input type="url" id="script-thumbnail" class="form-input" placeholder="Enter thumbnail image URL" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="script-download" class="form-label">Download Link</label>
+                                        <input type="url" id="script-download" class="form-input" placeholder="Enter download link" required>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button type="submit" id="submit-btn" class="primary-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center">
+                                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> <span id="submit-text">ADD SCRIPT</span>
+                                        </button>
+                                        <button type="button" id="clear-form" class="secondary-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center">
+                                            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> CLEAR
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
-                                <span class="font-semibold">Server Backups</span>
-                                <span class="bg-blue-500/20 text-blue-500 px-2 py-1 rounded-full text-sm" id="backup-count">0</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
-                                <span class="font-semibold">Skin Scripts</span>
-                                <span class="bg-green-500/20 text-green-500 px-2 py-1 rounded-full text-sm" id="skin-count">0</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
-                                <span class="font-semibold">Vehicle Scripts</span>
-                                <span class="bg-purple-500/20 text-purple-500 px-2 py-1 rounded-full text-sm" id="vehicle-count">0</span>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <div class="glass-effect p-6 rounded-xl border border-gray-700">
+                                <h3 class="text-lg font-bold mb-4 text-primary-start">Manage Scripts</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Category</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="scripts-list">
+                                            <!-- Scripts will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        </main>
+                <!-- Categories Management Page -->
+                <div id="categories-page" class="page-view hidden">
+                    <h2 class="text-2xl font-bold uppercase mb-6 tracking-wider border-b border-gray-700 pb-3 text-primary-start">Category Management</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-effect p-6 rounded-xl border border-gray-700">
+                            <h3 class="text-lg font-bold mb-4 text-primary-start">Available Categories</h3>
+                            <div class="grid grid-cols-2 gap-4" id="categories-grid">
+                                <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
+                                    <i data-lucide="settings" class="w-6 h-6 text-primary-start"></i>
+                                    <div>
+                                        <p class="font-semibold">System Scripts</p>
+                                        <p class="text-xs text-secondary-text">Core system scripts</p>
+                                    </div>
+                                </div>
+                                <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
+                                    <i data-lucide="server" class="w-6 h-6 text-blue-500"></i>
+                                    <div>
+                                        <p class="font-semibold">Server Backups</p>
+                                        <p class="text-xs text-secondary-text">Server backup scripts</p>
+                                    </div>
+                                </div>
+                                <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
+                                    <i data-lucide="user" class="w-6 h-6 text-green-500"></i>
+                                    <div>
+                                        <p class="font-semibold">Skin Scripts</p>
+                                        <p class="text-xs text-secondary-text">Character skin scripts</p>
+                                    </div>
+                                </div>
+                                <div class="bg-card-bg p-4 rounded-lg border border-gray-700 flex items-center space-x-3">
+                                    <i data-lucide="car" class="w-6 h-6 text-purple-500"></i>
+                                    <div>
+                                        <p class="font-semibold">Vehicle Scripts</p>
+                                        <p class="text-xs text-secondary-text">Vehicle-related scripts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-        <footer class="mt-12 pt-6 border-t border-gray-800 text-center text-xs text-secondary-text">
-            <p class="uppercase font-bold mb-2">ZiroX Scripts Admin Panel</p>
-            <p>Secure script management system</p>
-        </footer>
+                        <div class="glass-effect p-6 rounded-xl border border-gray-700">
+                            <h3 class="text-lg font-bold mb-4 text-primary-start">Category Statistics</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
+                                    <span class="font-semibold">System Scripts</span>
+                                    <span class="bg-primary-start/20 text-primary-start px-2 py-1 rounded-full text-sm" id="system-count">0</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
+                                    <span class="font-semibold">Server Backups</span>
+                                    <span class="bg-blue-500/20 text-blue-500 px-2 py-1 rounded-full text-sm" id="backup-count">0</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
+                                    <span class="font-semibold">Skin Scripts</span>
+                                    <span class="bg-green-500/20 text-green-500 px-2 py-1 rounded-full text-sm" id="skin-count">0</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-card-bg rounded-lg">
+                                    <span class="font-semibold">Vehicle Scripts</span>
+                                    <span class="bg-purple-500/20 text-purple-500 px-2 py-1 rounded-full text-sm" id="vehicle-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+            </main>
+
+            <footer class="mt-12 pt-6 border-t border-gray-800 text-center text-xs text-secondary-text">
+                <p class="uppercase font-bold mb-2">ZiroX Scripts Admin Panel</p>
+                <p>Secure script management system</p>
+            </footer>
+
+        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -578,6 +699,55 @@
 
     <script>
         lucide.createIcons();
+
+        // Password protection variables
+        const CORRECT_PASSWORD = "admin123"; // Change this to your desired password
+        let attemptsLeft = 3;
+        let isAuthenticated = false;
+
+        // Password screen functionality
+        function setupPasswordScreen() {
+            const passwordScreen = document.getElementById('password-screen');
+            const passwordForm = document.getElementById('password-form');
+            const passwordInput = document.getElementById('password-input');
+            const passwordError = document.getElementById('password-error');
+            const attemptsCount = document.getElementById('attempts-count');
+            
+            // Update attempts display
+            attemptsCount.textContent = attemptsLeft;
+            
+            passwordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const enteredPassword = passwordInput.value.trim();
+                
+                if (enteredPassword === CORRECT_PASSWORD) {
+                    // Correct password - grant access
+                    isAuthenticated = true;
+                    passwordScreen.style.display = 'none';
+                    document.getElementById('admin-panel').classList.remove('hidden');
+                    
+                    // Initialize the admin panel
+                    initAdminPanel();
+                } else {
+                    // Incorrect password
+                    attemptsLeft--;
+                    attemptsCount.textContent = attemptsLeft;
+                    
+                    // Show error
+                    passwordError.classList.add('show');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    if (attemptsLeft <= 0) {
+                        // No attempts left
+                        passwordInput.disabled = true;
+                        document.getElementById('password-submit').disabled = true;
+                        passwordError.textContent = 'No attempts remaining. Please refresh the page to try again.';
+                    }
+                }
+            });
+        }
 
         let scripts = [];
         let categories = [];
@@ -865,8 +1035,13 @@
         }
 
         window.onload = function() {
-            setupNavigation();
-            initAdminPanel();
+            // Set up password screen first
+            setupPasswordScreen();
+            
+            // Only set up navigation if authenticated
+            if (isAuthenticated) {
+                setupNavigation();
+            }
         };
 
         window.editScript = editScript;
